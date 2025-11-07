@@ -1,43 +1,47 @@
-import { useEffect } from 'react'
-import { X } from 'lucide-react'
+import React from 'react';
 
-export default function ArticleModal({ open, article, onClose, onComment }) {
-  useEffect(() => {
-    function onEsc(e) { if (e.key === 'Escape') onClose() }
-    if (open) document.addEventListener('keydown', onEsc)
-    return () => document.removeEventListener('keydown', onEsc)
-  }, [open, onClose])
-
-  if (!open || !article) return null
+export default function ArticleModal({ open, onClose, article, onComment }) {
+  if (!open || !article) return null;
+  const { title, author, content, url, urlToImage, source, publishedAt } = article;
 
   return (
-    <div className="fixed inset-0 z-30 bg-black/40 flex items-center justify-center p-4">
-      <div className="bg-white max-w-3xl w-full rounded-lg overflow-hidden shadow-xl">
-        <div className="flex items-center justify-between px-4 py-3 border-b">
-          <h2 className="font-semibold text-gray-900 pr-4 line-clamp-1">{article.title}</h2>
-          <button onClick={onClose} className="p-2 rounded-md hover:bg-gray-100">
-            <X className="h-5 w-5" />
-          </button>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40">
+      <div className="w-full max-w-3xl rounded-xl bg-white shadow-2xl overflow-hidden">
+        <div className="aspect-video bg-slate-100">
+          {urlToImage && (
+            <img src={urlToImage} alt={title} className="w-full h-full object-cover" />
+          )}
         </div>
-        {article.urlToImage && (
-          <img src={article.urlToImage} alt={article.title} className="w-full h-72 object-cover" />
-        )}
-        <div className="p-4 space-y-3">
-          <p className="text-gray-700 whitespace-pre-wrap">{article.content || article.description}</p>
-          <div className="text-sm text-gray-500 flex items-center gap-2">
-            <span>Sumber:</span>
-            <a href={article.url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">Baca sumber</a>
-          </div>
-          <div className="pt-2">
+        <div className="p-6">
+          <div className="text-xs text-slate-500">{source?.name} • {new Date(publishedAt).toLocaleString()}</div>
+          <h2 className="mt-1 text-2xl font-bold text-slate-900">{title}</h2>
+          <p className="mt-2 text-sm text-slate-600">{author ? `By ${author}` : null}</p>
+          {content && <p className="mt-4 text-slate-700 whitespace-pre-line">{content}</p>}
+          <div className="mt-4 flex items-center gap-3">
+            <a
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center rounded-md bg-slate-900 text-white px-4 py-2 text-sm font-medium hover:bg-slate-800"
+            >
+              Baca Sumber
+            </a>
             <button
               onClick={onComment}
-              className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
+              className="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
               Tulis Komentar (butuh login)
+            </button>
+            <div className="flex-1" />
+            <button
+              onClick={onClose}
+              className="inline-flex items-center rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-700 hover:bg-slate-200"
+            >
+              Tutup
             </button>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

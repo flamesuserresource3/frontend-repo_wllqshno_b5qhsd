@@ -1,47 +1,24 @@
-import { Search, User } from 'lucide-react'
+import React from 'react';
+import { Newspaper, User } from 'lucide-react';
 
-export default function Navbar({ query, onQueryChange, categories, category, onCategoryChange, onLoginClick }) {
+export default function Navbar({ onLoginClick }) {
   return (
-    <header className="sticky top-0 z-20 bg-white/80 backdrop-blur border-b border-gray-200">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-4">
+    <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/70 bg-white/90 border-b border-slate-200">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center justify-center w-9 h-9 rounded-md bg-gradient-to-tr from-blue-600 to-indigo-500 text-white font-bold">N</span>
-          <span className="font-semibold text-gray-800 tracking-tight">NovaNews</span>
-        </div>
-
-        <div className="flex-1 max-w-xl">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => onQueryChange(e.target.value)}
-              placeholder="Cari berita..."
-              className="w-full pl-9 pr-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-            />
+          <div className="inline-flex items-center justify-center rounded-lg bg-slate-900 text-white w-9 h-9 shadow-sm">
+            <Newspaper size={18} />
           </div>
+          <span className="font-semibold text-slate-900 tracking-tight">FlashNews</span>
         </div>
-
-        <div>
-          <select
-            value={category}
-            onChange={(e) => onCategoryChange(e.target.value)}
-            className="px-3 py-2 rounded-md border border-gray-300 bg-white text-sm"
-          >
-            <option value="">Semua Kategori</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-        </div>
-
         <button
           onClick={onLoginClick}
-          className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-gray-300 hover:border-gray-400 text-sm"
+          className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400/50"
         >
-          <User className="h-4 w-4" /> Masuk
+          <User size={16} />
+          Login
         </button>
       </div>
     </header>
-  )
+  );
 }

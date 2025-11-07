@@ -1,105 +1,114 @@
-import { useEffect, useMemo, useState } from 'react'
-import Navbar from './components/Navbar'
-import Filters from './components/Filters'
-import ArticleCard from './components/ArticleCard'
-import ArticleModal from './components/ArticleModal'
+import React, { useEffect, useMemo, useState } from 'react';
+import Navbar from './components/Navbar';
+import HeroSpline from './components/HeroSpline';
+import Filters from './components/Filters';
+import ArticleCard from './components/ArticleCard';
+import ArticleModal from './components/ArticleModal';
 
-const CATEGORIES = ['business', 'entertainment', 'general', 'health', 'science', 'sports', 'technology']
+const NEWS_ENDPOINTS = {
+  everything: 'https://newsapi.org/v2/everything',
+  topHeadlines: 'https://newsapi.org/v2/top-headlines',
+};
 
-function App() {
-  const [query, setQuery] = useState('')
-  const [category, setCategory] = useState('')
-  const [sortBy, setSortBy] = useState('publishedAt')
-  const [articles, setArticles] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [open, setOpen] = useState(false)
-  const [active, setActive] = useState(null)
+export default function App() {
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [query, setQuery] = useState('fintech');
+  const [category, setCategory] = useState('general');
+  const [sortBy, setSortBy] = useState('publishedAt');
+  const [selected, setSelected] = useState(null);
 
-  const apiKey = import.meta.env.VITE_NEWSAPI_KEY
+  const apiKey = import.meta.env.VITE_NEWSAPI_KEY;
 
-  const endpoint = useMemo(() => {
-    const base = 'https://newsapi.org/v2'
-    const params = new URLSearchParams()
+  const headers = useMemo(() => ({ 'X-Api-Key': apiKey || '' }), [apiKey]);
 
-    if (query) {
-      // Everything search
-      params.set('q', query)
-      params.set('sortBy', sortBy)
-      params.set('pageSize', '24')
-      return `${base}/everything?${params.toString()}`
-    } else {
-      // Top headlines with optional category
-      if (category) params.set('category', category)
-      params.set('country', 'us')
-      params.set('pageSize', '24')
-      return `${base}/top-headlines?${params.toString()}`
+  const fetchNews = async () => {
+    if (!apiKey) {
+      setError('Tambahkan VITE_NEWSAPI_KEY pada environment untuk memuat berita.');
+      return;
     }
-  }, [query, category, sortBy])
+    setLoading(true);
+    setError('');
+    try {
+      let url = '';
+      const pageSize = 24;
+      if (query && query.trim().length > 0) {
+        const q = encodeURIComponent(query.trim());
+        const s = sortBy === 'publishedAt' ? 'publishedAt' : sortBy;
+        url = `${NEWS_ENDPOINTS.everything}?q=${q}&sortBy=${s}&pageSize=${pageSize}`;
+      } else {
+        const cat = encodeURIComponent(category);
+        url = `${NEWS_ENDPOINTS.topHeadlines}?country=us&category=${cat}&pageSize=${pageSize}`;
+      }
+      const res = await fetch(url, { headers });
+      if (!res.ok) throw new Error('Gagal memuat berita');
+      const data = await res.json();
+      setArticles(Array.isArray(data.articles) ? data.articles : []);
+    } catch (e) {
+      setError(e.message || 'Terjadi kesalahan saat memuat berita');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function fetchNews() {
-      setLoading(true)
-      setError('')
-      try {
-        const res = await fetch(endpoint, { headers: { 'X-Api-Key': apiKey || '' } })
-        if (!res.ok) throw new Error('Gagal memuat berita')
-        const data = await res.json()
-        setArticles(Array.isArray(data.articles) ? data.articles : [])
-      } catch (e) {
-        setError(e.message || 'Terjadi kesalahan')
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchNews()
-  }, [endpoint, apiKey])
+    fetchNews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category, sortBy]);
 
-  function openArticle(a) { setActive(a); setOpen(true) }
-  function closeArticle() { setOpen(false); setActive(null) }
+  const handleSearch = (value) => {
+    setQuery(value);
+    setTimeout(fetchNews, 0);
+  };
 
-  function onComment() {
-    alert('Untuk berkomentar, Anda harus login. (Autentikasi akan ditambahkan pada versi backend)')
-  }
+  const handleLoginClick = () => {
+    alert('Autentikasi akan diintegrasikan via Laravel.');
+  };
+
+  const handleComment = () => {
+    alert('Komentar memerlukan login. Backend Laravel akan menangani komentar.');
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar
-        query={query}
-        onQueryChange={setQuery}
-        categories={CATEGORIES}
+    <div className="min-h-screen bg-white text-slate-900">
+      <Navbar onLoginClick={handleLoginClick} />
+      <HeroSpline />
+      <Filters
+        sortBy={sortBy}
+        setSortBy={setSortBy}
         category={category}
-        onCategoryChange={setCategory}
-        onLoginClick={() => alert('Halaman login akan tersedia setelah backend siap')}
+        setCategory={setCategory}
+        onSearch={handleSearch}
       />
 
-      <main className="max-w-6xl mx-auto px-4">
-        <Filters selected={sortBy} onChange={setSortBy} />
-
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">{error}</div>
-        )}
-
-        {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="h-64 bg-white rounded-lg border border-gray-200 animate-pulse" />
-            ))}
+          <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
           </div>
+        )}
+        {loading ? (
+          <div className="py-20 grid place-items-center text-slate-500">Memuat berita…</div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 py-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {articles.map((a, idx) => (
-              <ArticleCard key={idx} article={a} onOpen={openArticle} />
+              <ArticleCard key={idx} article={a} onOpen={() => setSelected(a)} />
             ))}
           </div>
         )}
       </main>
 
-      <ArticleModal open={open} article={active} onClose={closeArticle} onComment={onComment} />
+      <ArticleModal
+        open={!!selected}
+        onClose={() => setSelected(null)}
+        article={selected}
+        onComment={handleComment}
+      />
 
-      <footer className="py-10 text-center text-sm text-gray-500">© {new Date().getFullYear()} NovaNews • Sumber data: NewsAPI.org</footer>
+      <footer className="border-t border-slate-200 py-6 text-center text-sm text-slate-500">
+        © {new Date().getFullYear()} FlashNews — Fintech & Business Headlines
+      </footer>
     </div>
-  )
+  );
 }
-
-export default App
