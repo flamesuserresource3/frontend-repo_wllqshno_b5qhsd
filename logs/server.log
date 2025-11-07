@@ -3,9 +3,7 @@
 > vite
 
 
-  VITE v5.4.20  ready in 258 ms
+  VITE v5.4.20  ready in 262 ms
 
   ➜  Local:   http://localhost:3000/
   ➜  Network: http://172.20.2.223:3000/
-3:34:17 AM [vite] ✨ new dependencies optimized: lucide-react
-3:34:17 AM [vite] ✨ optimized dependencies changed. reloading
